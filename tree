@@ -1,0 +1,30 @@
+cspm/
+├── cmd/
+│   └── cspm/
+│       └── main.go
+├── internal/
+│   ├── scanner/
+│   │   ├── ec2.go
+│   │   ├── s3.go
+│   │   ├── rds.go
+│   │   └── iam.go
+│   ├── rules/
+│   │   ├── ec2.go
+│   │   ├── s3.go
+│   │   ├── rds.go
+│   │   └── iam.go
+│   ├── dashboard/
+│   │   └── dashboard.go
+│   └── automation/
+│       ├── ec2.go
+│       ├── s3.go
+│       ├── rds.go
+│       └── iam.go
+├── pkg/
+│   ├── aws/
+│   └── utils/
+├── tests/
+│   ├── scanner_test.go
+│   ├── rules_test.go
+│   └── automation_test.go
+└── go.mod
