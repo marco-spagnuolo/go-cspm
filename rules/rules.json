@@ -1,0 +1,23 @@
+[
+    {
+      "id": "S3-001",
+      "description": "Check S3 bucket encryption",
+      "check": "s3:CheckBucketEncryption"
+    },
+    {
+      "id": "IAM-001",
+      "description": "Check for unused IAM keys",
+      "check": "iam:CheckUnusedKeys"
+    },
+    {
+      "id": "EC2-001",
+      "description": "Check EC2 instance types",
+      "check": "ec2:CheckInstanceTypes"
+    },
+    {
+      "id": "RDS-001",
+      "description": "Check RDS backup retention policy",
+      "check": "rds:CheckBackupRetention"
+    }
+  ]
+  
