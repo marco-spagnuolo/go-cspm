@@ -1,6 +1,8 @@
 package utils
 
-// Funzioni utili generiche
+import "fmt"
+
+// PrintMessage stampa un messaggio
 func PrintMessage(message string) {
-	// Codice per stampare un messaggio
+	fmt.Println(message)
 }

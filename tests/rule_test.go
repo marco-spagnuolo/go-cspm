@@ -1,16 +1,36 @@
 package tests
 
 import (
+	"cspm-go/config"
 	"cspm-go/internal/rules"
 	"testing"
 
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/aws/aws-sdk-go/service/rds"
 	"github.com/aws/aws-sdk-go/service/s3"
 )
+
+func createSession(t *testing.T) *session.Session {
+	config, err := config.LoadConfig("../config/config.json")
+	if err != nil {
+		t.Fatalf("Failed to load config: %v", err)
+	}
+
+	sess := session.Must(session.NewSession(&aws.Config{
+		Region: aws.String(config.AWSRegion),
+		Credentials: credentials.NewStaticCredentials(
+			config.AWSAccessKeyID,
+			config.AWSSecretAccessKey,
+			"",
+		),
+	}))
+
+	return sess
+}
 
 func TestCheckInstanceSecurityGroups(t *testing.T) {
 	instance := &ec2.Instance{
@@ -24,20 +44,21 @@ func TestCheckInstanceSecurityGroups(t *testing.T) {
 }
 
 func TestCheckEBSVolumeEncryption(t *testing.T) {
+	sess := createSession(t)
+	ec2Client := ec2.New(sess)
+
 	instance := &ec2.Instance{
 		BlockDeviceMappings: []*ec2.InstanceBlockDeviceMapping{
 			{Ebs: &ec2.EbsInstanceBlockDevice{VolumeId: aws.String("vol-12345678")}}, // Utilizza un campo valido
 		},
 	}
-	if rules.CheckEBSVolumeEncryption(instance, &ec2.EC2{}) {
+	if rules.CheckEBSVolumeEncryption(instance, ec2Client) {
 		t.Fatalf("Expected instance to fail EBS volume encryption check")
 	}
 }
 
 func TestCheckS3BucketEncryption(t *testing.T) {
-	sess := session.Must(session.NewSession(&aws.Config{
-		Region: aws.String("us-west-2"),
-	}))
+	sess := createSession(t)
 	svc := s3.New(sess)
 	bucketName := "test-bucket"
 	if rules.CheckS3BucketEncryption(bucketName, svc) {
@@ -46,9 +67,7 @@ func TestCheckS3BucketEncryption(t *testing.T) {
 }
 
 func TestCheckS3BucketPublicAccess(t *testing.T) {
-	sess := session.Must(session.NewSession(&aws.Config{
-		Region: aws.String("us-west-2"),
-	}))
+	sess := createSession(t)
 	svc := s3.New(sess)
 	bucketName := "test-bucket"
 	if rules.CheckS3BucketPublicAccess(bucketName, svc) {
@@ -75,9 +94,7 @@ func TestCheckRDSInstanceBackup(t *testing.T) {
 }
 
 func TestCheckIAMUserMFA(t *testing.T) {
-	sess := session.Must(session.NewSession(&aws.Config{
-		Region: aws.String("us-west-2"),
-	}))
+	sess := createSession(t)
 	svc := iam.New(sess)
 	user := &iam.User{
 		UserName: aws.String("test-user"),
