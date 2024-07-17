@@ -18,14 +18,14 @@ To install Go-CSPM, you need to have Go installed on your machine. Then run:
 go get github.com/marco-spagnuolo/go-cspm
 
 
-### Generating Reports
+## Generating Reports
 
 To generate a security report, use:
 
 ```bash
 go-cspm -report
 
-### Custom Rules
+## Custom Rules
 
 You can define custom rules by creating a rules file in YAML format. Here is an example:
 
@@ -45,11 +45,12 @@ You can define custom rules by creating a rules file in YAML format. Here is an 
 - id: custom-rule-4
   description: "Ensure RDS instances have backup retention policy enabled"
   check: "rds:CheckBackupRetention"
-
+```
 ## To run checks with your custom rules, use:
 
 ```bash
 go-cspm -check -rules /path/to/custom/rules.yaml
+```
 
 Contributing
 Contributions are welcome! If you would like to contribute to Go-CSPM, please follow these steps:
