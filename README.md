@@ -13,8 +13,9 @@
 ## Installation
 
 To install Go-CSPM, you need to have Go installed on your machine. Then run:
-
+```bash
 go get github.com/marco-spagnuolo/go-cspm
+```
 
 
 ## Generating Reports
