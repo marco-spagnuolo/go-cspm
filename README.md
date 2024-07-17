@@ -14,7 +14,6 @@
 
 To install Go-CSPM, you need to have Go installed on your machine. Then run:
 
-```bash
 go get github.com/marco-spagnuolo/go-cspm
 
 
@@ -22,9 +21,8 @@ go get github.com/marco-spagnuolo/go-cspm
 
 To generate a security report, use:
 
-```bash
 go-cspm -report
-
+```
 ## Custom Rules
 
 You can define custom rules by creating a rules file in YAML format. Here is an example:
@@ -48,7 +46,7 @@ You can define custom rules by creating a rules file in YAML format. Here is an 
 ```
 ## To run checks with your custom rules, use:
 
-```bash
+```bash 
 go-cspm -check -rules /path/to/custom/rules.yaml
 ```
 
