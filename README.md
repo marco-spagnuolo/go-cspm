@@ -21,8 +21,10 @@ go get github.com/marco-spagnuolo/go-cspm
 
 To generate a security report, use:
 
+```bash
 go-cspm -report
 ```
+
 ## Custom Rules
 
 You can define custom rules by creating a rules file in YAML format. Here is an example:
