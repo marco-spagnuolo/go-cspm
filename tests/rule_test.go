@@ -1,16 +1,15 @@
 package tests
 
 import (
-	"cspm-go/internal/mocks"
 	"cspm-go/internal/rules"
 	"testing"
 
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/aws/aws-sdk-go/service/rds"
 	"github.com/aws/aws-sdk-go/service/s3"
-	"github.com/golang/mock/gomock"
 )
 
 func TestCheckInstanceSecurityGroups(t *testing.T) {
@@ -25,52 +24,34 @@ func TestCheckInstanceSecurityGroups(t *testing.T) {
 }
 
 func TestCheckEBSVolumeEncryption(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	mockEC2 := mocks.NewMockEC2API(ctrl)
 	instance := &ec2.Instance{
 		BlockDeviceMappings: []*ec2.InstanceBlockDeviceMapping{
-			{
-				Ebs: &ec2.EbsInstanceBlockDevice{
-					// This line is removed since Encrypted is not a field in EbsInstanceBlockDevice
-				},
-			},
+			{Ebs: &ec2.EbsInstanceBlockDevice{VolumeId: aws.String("vol-12345678")}}, // Utilizza un campo valido
 		},
 	}
-	if rules.CheckEBSVolumeEncryption(instance, mockEC2) {
+	if rules.CheckEBSVolumeEncryption(instance, &ec2.EC2{}) {
 		t.Fatalf("Expected instance to fail EBS volume encryption check")
 	}
 }
 
 func TestCheckS3BucketEncryption(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	mockS3 := mocks.NewMockS3API(ctrl)
+	sess := session.Must(session.NewSession(&aws.Config{
+		Region: aws.String("us-west-2"),
+	}))
+	svc := s3.New(sess)
 	bucketName := "test-bucket"
-
-	mockS3.EXPECT().GetBucketEncryption(&s3.GetBucketEncryptionInput{
-		Bucket: aws.String(bucketName),
-	}).Return(&s3.GetBucketEncryptionOutput{}, nil).AnyTimes()
-
-	if rules.CheckS3BucketEncryption(bucketName, mockS3) {
+	if rules.CheckS3BucketEncryption(bucketName, svc) {
 		t.Fatalf("Expected bucket to fail encryption check")
 	}
 }
 
 func TestCheckS3BucketPublicAccess(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	mockS3 := mocks.NewMockS3API(ctrl)
+	sess := session.Must(session.NewSession(&aws.Config{
+		Region: aws.String("us-west-2"),
+	}))
+	svc := s3.New(sess)
 	bucketName := "test-bucket"
-
-	mockS3.EXPECT().GetBucketPolicyStatus(&s3.GetBucketPolicyStatusInput{
-		Bucket: aws.String(bucketName),
-	}).Return(&s3.GetBucketPolicyStatusOutput{}, nil).AnyTimes()
-
-	if rules.CheckS3BucketPublicAccess(bucketName, mockS3) {
+	if rules.CheckS3BucketPublicAccess(bucketName, svc) {
 		t.Fatalf("Expected bucket to fail public access check")
 	}
 }
@@ -94,19 +75,14 @@ func TestCheckRDSInstanceBackup(t *testing.T) {
 }
 
 func TestCheckIAMUserMFA(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	mockIAM := mocks.NewMockIAMAPI(ctrl)
+	sess := session.Must(session.NewSession(&aws.Config{
+		Region: aws.String("us-west-2"),
+	}))
+	svc := iam.New(sess)
 	user := &iam.User{
 		UserName: aws.String("test-user"),
 	}
-
-	mockIAM.EXPECT().ListMFADevices(&iam.ListMFADevicesInput{
-		UserName: user.UserName,
-	}).Return(&iam.ListMFADevicesOutput{}, nil).AnyTimes()
-
-	if rules.CheckIAMUserMFA(user, mockIAM) {
+	if rules.CheckIAMUserMFA(user, svc) {
 		t.Fatalf("Expected user to fail MFA check")
 	}
 }
